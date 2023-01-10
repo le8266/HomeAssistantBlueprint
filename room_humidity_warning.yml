@@ -1,0 +1,37 @@
+blueprint:
+  name: Room humidity warning
+  description: Send notification if the room humidity is to high
+  domain: automation
+  input:
+    humidity_sensor:
+      name: Humidity sensor
+      description: Humidity sensor
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+    target_light:
+      name: Lights
+      description: The lights to keep in sync.
+      selector:
+        target:
+          entity:
+            domain: light
+
+trigger:
+  - platform: device
+    entity_id: !input humidity_sensor
+
+condition:
+  - condition: numeric_state
+    entity_id: !input light_sensor
+    below: !input light_threshold
+
+action:
+  - service: >
+      {% if trigger.to_state.state == "on" %}
+        light.turn_on
+      {% else %}
+        light.turn_off
+      {% endif %}
+    target: !input target_light
